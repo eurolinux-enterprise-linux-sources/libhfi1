@@ -3,8 +3,6 @@
 #
 # GPL LICENSE SUMMARY
 #
-# Copyright(c) 2015 Intel Corporation.
-#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of version 2 of the GNU General Public License as
 # published by the Free Software Foundation.
@@ -19,8 +17,6 @@
 # www.intel.com
 #
 # BSD LICENSE
-#
-# Copyright(c) 2015 Intel Corporation.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -48,67 +44,69 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-# Copyright (c) 2013, 2014. Intel Corporation. All rights reserved.
+# Copyright (c) 2013, 2014-2016. Intel Corporation. All rights reserved.
 # Copyright (c) 2007, 2008, 2009. QLogic Corp. All rights reserved.
 # Copyright (c) 2003, 2004, 2005. PathScale, Inc. All rights reserved.
 
-%define ver 
-%define RELEASE 
-%define rel %{?CUSTOM_RELEASE} %{!?CUSTOM_RELEASE:%RELEASE}
+%global ver 0.5
+%global RELEASE 23
+%global rel %{?CUSTOM_RELEASE} %{!?CUSTOM_RELEASE:%RELEASE}
 
-Name: libhfi1verbs
+Name: libhfi1
 Version: %ver
 Release: %rel%{?dist}
 Summary: Intel Omni-Path HFI Userspace Driver
 
 Group: System Environment/Libraries
 License: GPLv2 or BSD
-Url: http://www.openfabrics.org/
-Source: http://www.openfabrics.org/downloads/%{name}-%{version}.tar.gz
-BuildRoot: %{_tmppath}/%{name}-%{version}-root
+Url: http://www.github.com/01org/opa-libhfi1verbs/
+Source: %{name}-%{version}.tar.gz
 
 BuildRequires: libibverbs-devel >= 1.0-0.5.rc7
+BuildRequires: autoconf automake libtool
+BuildRequires: valgrind-devel
+ExclusiveArch: x86_64
 Obsoletes: libhfiverbs
+Obsoletes: libhfi1verbs
 
 %description
-libhfi1verbs provides a device-specific userspace driver for Intel Host
+libhfi1 provides a device-specific userspace driver for Intel Host
 Fabric interface cards.  This driver is designed for use with the
 libibverbs library.
 
-%package devel
-Summary: Development files for the libhfi1verbs driver
+%package static
+Summary: Development files for the libhfi1 driver
 Group: System Environment/Libraries
 Requires: %{name} = %{version}-%{release}
 Obsoletes: libhfiverbs-devel
+Obsoletes: libhfi1verbs-devel
 
-%description devel
-Static version of libhfi1verbs that may be linked directly to an
+%description static
+Static version of libhfi1 that may be linked directly to an
 application, which may be useful for debugging.
 
 %prep
-%setup -q -n %{name}-%{ver}
+%setup -q
 
 %build
 ./autogen.sh
-%configure
-make %{?_smp_flags}
+%configure --with-valgrind
+make
 
 %install
-rm -rf $RPM_BUILD_ROOT
 make DESTDIR=$RPM_BUILD_ROOT install
 # remove unpackaged files from the buildroot
 rm -f $RPM_BUILD_ROOT%{_libdir}/*.la
 
-%clean
-rm -rf $RPM_BUILD_ROOT
-
 %files
-%defattr(-,root,root)
 %{_libdir}/libhfi1verbs*.so
-%doc AUTHORS COPYING README
+%doc AUTHORS README
+%license COPYING
 %config %{_sysconfdir}/libibverbs.d/hfi1.driver
 
-%files devel
-%defattr(-,root,root,-)
+%files static
 %{_libdir}/libhfi1verbs*.a
+
 %changelog
+* Thu Apr 21 2016 Dennis Dalessandro <dennis.dalessandro@intel.com> 0.5-23
+- Initial packaging for libhfi1 for Fedora.
